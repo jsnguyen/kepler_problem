@@ -4,12 +4,12 @@ Solution to the two body Kepler Problem in pure Haskell! Completely analytical (
 
 Run with
 
-`runhaskell EllipticalOrbit.hs`
-`./plot.py`
+    runhaskell EllipticalOrbit.hs
+    ./plot.py
 
 or
 
-`runhaskell HyperbolicOrbit.hs`
-`./plot.py`
+    runhaskell HyperbolicOrbit.hs
+    ./plot.py
 
 For the elliptical or hyperbolic cases respectively.
