@@ -12,3 +12,4 @@ main = do
 
     let res = [keplerProblemSolution r0 v0 mu a i | i <- (linspace 0 (1*period) 5e2) ]
     writeFile "data.txt" . intercalate "\n" . map show $ res
+    putStrLn ("Done. Wrote data.txt!")

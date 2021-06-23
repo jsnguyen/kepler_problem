@@ -5,11 +5,15 @@ Solution to the two body Kepler Problem in pure Haskell! Completely analytical (
 Run with
 
     runhaskell EllipticalOrbit.hs
-    ./plot.py
+    python3 plot.py --iselliptical
+
+![elliptical orbit gif](./elliptical_orbit.gif)
 
 or
 
     runhaskell HyperbolicOrbit.hs
-    ./plot.py
+    python3 plot.py --ishyperbolic
+
+![hyperbolic orbit gif](./hyperbolic_orbit.gif)
 
 For the elliptical or hyperbolic cases respectively.

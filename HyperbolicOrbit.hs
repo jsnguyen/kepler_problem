@@ -12,3 +12,4 @@ main = do
 
     let res = [keplerProblemSolution r0 v0 mu a i | i <- (range (-0.5*yr) (0.5*yr) 1e5) ]
     writeFile "data.txt" . intercalate "\n" . map show $ res
+    putStrLn ("Done. Wrote data.txt!")

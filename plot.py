@@ -1,13 +1,21 @@
-#!/usr/bin/python3
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import matplotlib.patches as patches
+import argparse
 
 auToKm = 149597900
 
 def main():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--iselliptical', action='store_true', help='Plot assuming hyperbolic trajectory.')
+    parser.add_argument('--ishyperbolic', action='store_true', help='Plot assuming hyperbolic trajectory.')
+    args = parser.parse_args()
+
+    is_elliptical= args.iselliptical
+    is_hyperbolic = args.ishyperbolic
+
     filename = 'data.txt'
     xs = []
     ys = []
@@ -23,6 +31,8 @@ def main():
             vys.append(l[3])
 
     fig, ax = plt.subplots(figsize=(4,4), facecolor='#000000')
+    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
+
     ax.set_facecolor('#000000')
     line, = ax.plot([], [], marker='o', linestyle='none', color='C0', markeredgecolor='white', markersize=10)
     ax.plot(0,0 , marker='*', linestyle='none', color='#DAA520', markeredgecolor='white', markersize=10)
@@ -38,6 +48,7 @@ def main():
         return line,
 
     def animate(i):
+        [p.remove() for p in reversed(ax.patches)]
         line.set_data(xs[i], ys[i])
 
         scale = 0.025
@@ -59,12 +70,27 @@ def main():
     ax.quiver(xs,ys,vxs,vys)
     '''
 
-    padding_scale = 1.3
-    ax.set_xlim(padding_scale*min(xs), padding_scale*max(xs))
-    ax.set_ylim(padding_scale*min(ys), padding_scale*max(ys))
+    padding_scale = 1.2
+
     ax.xaxis.set_ticklabels([])
     ax.yaxis.set_ticklabels([])
-    plt.show()
+
+    save_name = 'orbit.gif'
+    if is_elliptical:
+        ax.set_xlim(padding_scale*min(xs), padding_scale*max(xs))
+        ax.set_ylim(padding_scale*min(ys), padding_scale*max(ys))
+        save_name = 'elliptical_orbit.gif'
+    elif is_hyperbolic:
+        ax.set_xlim(padding_scale*min(xs+ys), padding_scale*max(xs+ys))
+        ax.set_ylim(padding_scale*min(xs+ys), padding_scale*max(xs+ys))
+        save_name = 'hyperbolic_orbit.gif'
+    else:
+        ax.set_xlim(padding_scale*min(xs), padding_scale*max(xs))
+        ax.set_ylim(padding_scale*min(ys), padding_scale*max(ys))
+
+    anim.save(save_name, writer='pillow')
+
+    #plt.show()
 
 if __name__=='__main__':
     main()
