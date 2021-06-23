@@ -7,13 +7,11 @@ Run with
     runhaskell EllipticalOrbit.hs
     python3 plot.py --iselliptical
 
-![elliptical orbit gif](./elliptical_orbit.gif)
-
-or
+<img src="./elliptical_orbit.gif" alt="elliptical orbit gif" width="200">
 
     runhaskell HyperbolicOrbit.hs
     python3 plot.py --ishyperbolic
 
-![hyperbolic orbit gif](./hyperbolic_orbit.gif)
+<img src="./hyperbolic_orbit.gif" alt="hyperbolic orbit gif" width="200">
 
 For the elliptical or hyperbolic cases respectively.
