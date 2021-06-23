@@ -1,8 +1,28 @@
-import Data.List
-import Debug.Trace
+module KeplerProblem where
 
-seriesOrder = 10
+seriesOrder = 12 -- seems to be good enough, too low and it doesn't work!
+
+constGMSun :: Double
+constGMSun = 1.32712440018e11 -- km^3/s^2
+
+auToKm :: Double
+auToKm = 149597900 -- km
+
+rEarth :: Double
+rEarth = 1*auToKm
+
+vEarth :: Double
+vEarth = 29.8 -- km/s
+
+zEpsilon = 1e-6
+
 range start end step = takeWhile (<=end) $ iterate (+step) start
+linspace start end nBetween = do
+    let step = (end-start) / nBetween
+    takeWhile (<=end) $ iterate (+step) start
+
+dot = (sum.) . zipWith (*)
+norm = sqrt . sum . map (**2)
 
 calcZ :: Double -> Double -> Double
 calcZ x a = (x**2) / a
@@ -14,11 +34,10 @@ factorial n = n * factorial (n - 1)
 calcCTerm :: Double -> Int -> Double
 calcCTerm z k = (-z)**(fromIntegral k) / (fromIntegral . factorial $ 2*k + 2)
 
-zEpsilon = 1e-3
-
 calcCSeries :: Double -> Int -> Double
 calcCSeries z k
-    | z < zEpsilon = sum [calcCTerm z i | i <- [0..k]]
+    | abs z < zEpsilon = sum [calcCTerm z i | i <- [0..k]]
+    | z < 0 = (1 - cosh (sqrt (-z))) / z
     | otherwise = (1 - cos (sqrt z)) / z
 
 calcSTerm :: Double -> Int -> Double
@@ -26,11 +45,9 @@ calcSTerm z k = (-z)**(fromIntegral k) / (fromIntegral . factorial $ 2*k + 3)
 
 calcSSeries :: Double -> Int -> Double
 calcSSeries z k
-    | z < zEpsilon = sum [calcSTerm z i | i <- [0..k]]
+    | abs z < zEpsilon = sum [calcSTerm z i | i <- [0..k]]
+    | z < 0 = (sinh (sqrt (-z)) - (sqrt (-z))) / sqrt ((-z)**3)
     | otherwise = (sqrt z - sin (sqrt z)) / sqrt (z**3)
-
-dot = (sum.) . zipWith (*)
-norm = sqrt . sum . map (**2)
 
 calcTn :: [Double] -> [Double] -> Double -> Double -> Double -> Double
 calcTn r0 v0 mu xn a = do
@@ -55,26 +72,8 @@ newtonsMethod r0 v0 mu xn a t = do
         then xnp1
     else newtonsMethod r0 v0 mu xnp1 a t
 
-constGMSun :: Double
-constGMSun = 1.32712440018e11 -- km^3/s^2
-
-auToKm :: Double
-auToKm = 149597900 -- km
-
-rEarth :: Double
-rEarth = 1*auToKm
-
-rMercury = 0.387*auToKm
-vMercury = 47.36
-
-vEarth :: Double
-vEarth = 29.8 -- km/s
-
-calcSpecificEnergy :: [Double] -> [Double] -> Double -> Double
-calcSpecificEnergy r v mu = ((norm v)**2 / 2) - (mu/(norm r))
-
-calcSemiMajorAxis :: Double -> Double -> Double
-calcSemiMajorAxis mu epsilon = abs (mu / (2*epsilon))
+calcSemiMajorAxis :: [Double] -> [Double] -> Double -> Double
+calcSemiMajorAxis r0 v0 mu = - mu / ((norm v0)**2 - 2*mu / (norm r0))
 
 calcF :: [Double] -> Double -> Double -> Double -> Double
 calcF r0 mu x a = do
@@ -106,12 +105,11 @@ calcR f g r0 v0 = zipWith (+) (map (*f) r0) (map (*g) v0)
 calcV :: Double -> Double -> [Double] -> [Double] -> [Double]
 calcV fdot gdot r0 v0 = zipWith (+) (map (*fdot) r0) (map (*gdot) v0)
 
---keplersAlgorithm :: [Double] -> [Double] -> Double -> (Double,Double)
-keplersAlgorithm :: [Double] -> [Double] -> Double -> ([Double],[Double])
-keplersAlgorithm r0 v0 t = do
-    let mu = constGMSun
-    let epsilon = calcSpecificEnergy r0 v0 mu
-    let a = calcSemiMajorAxis mu epsilon
+calcPeriod :: Double -> Double -> Double
+calcPeriod mu a = 2*pi / (sqrt mu) * a**(1.5)
+
+keplerProblemSolution :: [Double] -> [Double] -> Double -> Double -> Double -> ([Double],[Double])
+keplerProblemSolution r0 v0 mu a t = do
 
     let x0 = (sqrt mu) * t / a
     let x = newtonsMethod r0 v0 mu x0 a t
@@ -126,18 +124,4 @@ keplersAlgorithm r0 v0 t = do
 
     let v = calcV fdot gdot r0 v0
     
-    --(t,x)
     (r,v)
-
-main = do
-    let r0 = [rEarth, 0     ]
-    let v0 = [0     , 0.5*vEarth]
-    let t  = 2629800 -- six months in seconds
-    let yr = 31557600
-
-    let mu = constGMSun
-    let epsilon = calcSpecificEnergy r0 v0 mu
-    let a = calcSemiMajorAxis mu epsilon
-    
-    let res = [keplersAlgorithm r0 v0 i | i <- (range (0*yr) (2*yr) 1e6) ]
-    writeFile "data.txt" . intercalate "\n" . map show $ res
